@@ -166,7 +166,10 @@ func (s *Server) dnsRequestTotal(w dns.ResponseWriter, req *dns.Msg, resp *dns.M
 		item = &msg.DnsItem{Dns: make(map[string][]string, 0), Count: &count, Domain: name, Type: qtype}
 	}
 	*item.Count++
-	item.Source = addSet(item.Source, w.RemoteAddr().String())
+	ip, _ := net.ResolveUDPAddr("udp", w.RemoteAddr().String())
+	if ip != nil {
+		item.Source = addSet(item.Source, ip.IP.String())
+	}
 	for _, r := range resp.Answer {
 		rcd, ok := item.Dns[dns.Type(r.Header().Rrtype).String()]
 		ip := parseAnswer(r)

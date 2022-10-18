@@ -3,6 +3,7 @@ package anticorruption
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 	"testing"
@@ -20,7 +21,11 @@ func Test_IP(t *testing.T) {
 }
 
 func Test_a(t *testing.T)  {
-
+	s, err := net.ResolveUDPAddr("udp","127.0.0.1:8989")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log(s.IP.String())
 }
 
 func GetLANDevIP(devName string) ([]string, error) {
