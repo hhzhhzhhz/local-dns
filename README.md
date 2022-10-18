@@ -20,9 +20,9 @@
     -e DB_FILE="/var/dns_db" \
     -e LOG_DIR="/log/" \
     -e IP_DB_FILE="/var/ip2region.xdb" \
-    -v :\dns\ip2region.xdb:"/var/ip2region.xdb" \
-    -v :\dns\dns_db:/var/dns_db \
-    -v :\dns\:/log/ dns:v3
+    -v G:\dns\ip2region.xdb:"/var/ip2region.xdb" \
+    -v G:\dns\dns_db:/var/dns_db \
+    -v G:\dns\:/log/ dns:v3
 
 
 ## 操作
