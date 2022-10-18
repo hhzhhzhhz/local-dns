@@ -22,8 +22,7 @@
     -e IP_DB_FILE="/var/ip2region.xdb" \
     -v G:\dns\ip2region.xdb:"/var/ip2region.xdb" \
     -v G:\dns\dns_db:/var/dns_db \
-    -v G:\dns\:/log/ dns:v3 \
-    --restart=always
+    -v G:\dns\:/log/ dns:v3
 
 
 ## 操作
