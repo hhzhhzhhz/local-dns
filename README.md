@@ -10,7 +10,7 @@
 
 
 ## Start
-> docker run -it \
+> docker run -it --restart=always \
     -p 65532:65532/tcp \
     -p 53:53/udp \
     -e SKYDNS_DOMAIN="cluster.local." \
@@ -22,7 +22,8 @@
     -e IP_DB_FILE="/var/ip2region.xdb" \
     -v G:\dns\ip2region.xdb:"/var/ip2region.xdb" \
     -v G:\dns\dns_db:/var/dns_db \
-    -v G:\dns\:/log/ dns:v3
+    -v G:\dns\:/log/ dns:v3 \
+    --restart=always
 
 
 ## 操作
