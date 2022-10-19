@@ -1,6 +1,3 @@
-# SkyDNS [![Build Status](https://travis-ci.org/skynetservices/skydns.png?branch=master)](https://travis-ci.org/skynetservices/skydns)
-*Version 2.5.3a*
-
 # Local-DNS
 * 基于[SkyDns](github.com/skynetservices/skydns)二次开发
 
