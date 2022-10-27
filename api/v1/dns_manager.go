@@ -3,13 +3,13 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"github.com/hhzhhzhhz/local-dns/constant"
 	"github.com/hhzhhzhhz/local-dns/log"
 	"github.com/hhzhhzhhz/local-dns/msg"
 	"github.com/hhzhhzhhz/local-dns/server"
 	"github.com/hhzhhzhhz/local-dns/utils"
 	"io/ioutil"
-	"net/http"
 )
 
 func NewDnsManager(b server.Backend) *dnsManager {
@@ -20,15 +20,15 @@ type dnsManager struct {
 	backend server.Backend
 }
 
-func (d *dnsManager) AddDnsRecord(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadAll(r.Body)
+func (d *dnsManager) AddDnsRecord(c *gin.Context) {
+	b, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		utils.HttpFailed(w, constant.ErrorReadBody)
+		utils.HttpFailed(c, constant.ErrorReadBody)
 		return
 	}
 	var records []msg.Service
 	if err := json.Unmarshal(b, &records); err != nil {
-		utils.HttpFailed(w, constant.ErrorParams)
+		utils.HttpFailed(c, constant.ErrorParams)
 		return
 	}
 	if err := utils.VarifyDnsMgrRequst(records); err != nil {
@@ -45,40 +45,29 @@ func (d *dnsManager) AddDnsRecord(w http.ResponseWriter, r *http.Request) {
 	}
 	for k, r := range rmap {
 		if err := d.backend.SaveRecords(context.TODO(), k, *r); err != nil {
-			utils.HttpFailed(w, constant.ErrorDbOp)
+			utils.HttpFailed(c, constant.ErrorDbOp)
 			return
 		}
 	}
 	log.Logger().Info("add dns record %+v", rmap)
-
-	utils.HttpSuccess(w, "success")
+	utils.HttpSuccess(c, "success")
 }
 // RemoveDnsRecord 移除域名Dns 记录
-func (d *dnsManager) RemoveDnsRecord(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	domains := r.Form["domains"]
+func (d *dnsManager) RemoveDnsRecord(c *gin.Context) {
+	domains := []string{c.Param("domains")}
 	if err := utils.VarifyDnsDomain(domains); err != nil {
 		return
 	}
 	if len(domains) == 0 {
-		utils.HttpFailed(w, constant.ErrorParams)
+		utils.HttpFailed(c, constant.ErrorParams)
 		return
 	}
 	if err := d.backend.RemoveRecords(context.TODO(), domains); err != nil {
-		utils.HttpFailed(w, constant.ErrorDbOp)
+		utils.HttpFailed(c, constant.ErrorDbOp)
 		return
 	}
 	log.Logger().Info("remove dns record %+v", domains)
 
-	utils.HttpSuccess(w, "success")
+	utils.HttpSuccess(c, "success")
 
-}
-
-func (d *dnsManager) ListRecord(w http.ResponseWriter, r *http.Request) {
-	rds, err := d.backend.AllRecord(context.TODO())
-	if err != nil {
-		utils.HttpFailed(w, constant.ErrorDbOp)
-		return
-	}
-	utils.HttpSuccess(w, rds)
 }

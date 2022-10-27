@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"github.com/hhzhhzhhz/local-dns/constant"
 	"net/http"
 )
@@ -16,22 +16,12 @@ type Response struct {
 	Data interface{} `json:"data"`
 }
 
-func HttpSuccess(w http.ResponseWriter, data interface{}) error {
-	b, _ := json.Marshal(&Response{
-		Code: success,
-		Data:  data,
-	})
-	w.Header().Add("content-type","application/json")
-	_, err := w.Write(b)
-	return err
+func HttpSuccess(c *gin.Context, data interface{}) {
+	c.Header("content-type", "application/json")
+	c.JSON(http.StatusOK, &Response{Code: success, Data:  data})
 }
 
-func HttpFailed(w http.ResponseWriter, data constant.ApiResponse) error {
-	b, _ := json.Marshal(&Response{
-		Code: data.Code,
-		Info:  data.Info,
-	})
-	w.Header().Add("content-type","application/json")
-	_, err := w.Write(b)
-	return err
+func HttpFailed(c *gin.Context, data constant.ApiResponse) {
+	c.Header("content-type", "application/json")
+	c.JSON(http.StatusOK, &Response{Code: data.Code, Info:  data.Info})
 }

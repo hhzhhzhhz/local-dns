@@ -59,6 +59,7 @@ func (bd *backend) ReverseRecord(name string) (*msg.Service, error) {
 
 	segments := strings.Split(msg.Path(name), "/")
 	records, err := bd.loopNodes(r, segments, star, nil)
+
 	if err != nil {
 		return nil, err
 	}

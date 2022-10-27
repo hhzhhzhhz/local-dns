@@ -40,6 +40,7 @@ type Config struct {
 	// The hostmaster responsible for this domain, defaults to hostmaster.<Domain>.
 	Hostmaster string `json:"hostmaster,omitempty"`
 	DNSSEC     string `json:"dnssec,omitempty"`
+	StaticPath string `json:"static_path"`
 	// Round robin A/AAAA replies. Default is true.
 	RoundRobin bool `json:"round_robin,omitempty"`
 	// Round robin selection of nameservers from among those listed, rather than have all forwarded requests try the first listed Server first every time.

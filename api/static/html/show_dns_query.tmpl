@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8;"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="robots" content="all" />
+<meta name="robots" content="index,follow"/>
+<title>dns query</title>
+</head>
+<style type="text/css">
+.me404 {
+width: 1000px;
+height: 480px;
+position: absolute;
+top: 50%;
+left: 50%;
+margin-left: -400px;
+margin-top: -240px;
+}
+.st0 {
+fill-rule: evenodd;
+clip-rule: evenodd;
+fill: #E8EBED;
+}
+.st1 {
+fill: #FFFFFF;
+stroke: #89949B;
+stroke-width: 3;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-miterlimit: 10;
+}
+.st2 {
+fill-rule: evenodd;
+clip-rule: evenodd;
+fill: #DBDFE1;
+}
+.st3 {
+fill: #FFFFFF;
+}
+.st4 {
+fill-rule: evenodd;
+clip-rule: evenodd;
+fill: #E8EBED;
+stroke: #89949B;
+stroke-width: 3;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-miterlimit: 10;
+}
+.st5 {
+fill-rule: evenodd;
+clip-rule: evenodd;
+fill: #FFFFFF;
+stroke: #89949B;
+stroke-width: 3;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-miterlimit: 10;
+}
+.st6 {
+fill-rule: evenodd;
+clip-rule: evenodd;
+fill: none;
+stroke: #89949B;
+stroke-width: 3;
+stroke-linecap: round;
+stroke-linejoin: round;
+stroke-miterlimit: 10;
+}
+</style>
+ <body>
+  <table border="1">
+        <tr>
+          <th>来源</th>
+          <th>类型</th>
+          <th>次数</th>
+          <th>最后时间</th>
+          <th>域名</th>
+        </tr>
+        {{- range $item := .data}}
+        <tr>
+            <td>{{$item.Source}}</td>
+            <td>{{$item.Type}}</td>
+            <td>{{$item.Count}}</td>
+            <td>{{$item.LastTime}}</td>
+            <td>
+            {{range $dm, $_ := $item.Answers}}
+
+            {{end}}
+            </td>
+        </tr>
+        {{- end }}
+  </table>
+  <br>
+  <table border="2">
+          <tr>
+            <th>域名</th>
+            <th>类型</th>
+            <th>应答</th>
+          </tr>
+          {{- range $item := .data}}
+          {{range $dm, $as := $item.Answers}}
+          <tr>
+                <td>{{$dm}}</td>
+                <td>
+                   {{range $a := $as}}
+                   {{$a.Qty}}|
+                   {{end}}
+                </td>
+                <td>
+                    {{range $a := $as}}
+                    {{$a.Result}}<br>
+                    {{end}}
+                </td>
+          </tr>
+          {{- end}}
+          {{- end }}
+    </table>
+ </body>
+</html>

@@ -152,7 +152,9 @@ func (s *Server) dnsRequestTotal(w dns.ResponseWriter, req *dns.Msg, resp *dns.M
 		qtype = dns.Type(r.Qtype).String()
 	}
 	item := &msg.DnsItem{}
-	re, err := s.db.Get(context.TODO(), RequestTotal, name)
+	ip, _ := net.ResolveUDPAddr("udp", w.RemoteAddr().String())
+	addr := ip.IP.String()
+	re, err := s.db.Get(context.TODO(), RequestTotal, addr)
 	if err != nil {
 		return
 	}
@@ -161,53 +163,29 @@ func (s *Server) dnsRequestTotal(w dns.ResponseWriter, req *dns.Msg, resp *dns.M
 			continue
 		}
 	}
-	if item.Domain == "" {
+	if item.Answers == nil {
 		count := int64(0)
-		item = &msg.DnsItem{Dns: make(map[string][]string, 0), Count: &count, Domain: name, Type: qtype}
+		item = &msg.DnsItem{Source: addr, Answers: make(map[string][]*msg.DnsAnswer, 0), Count: &count, Type: qtype}
 	}
 	*item.Count++
-	ip, _ := net.ResolveUDPAddr("udp", w.RemoteAddr().String())
-	if ip != nil {
-		item.Source = addSet(item.Source, ip.IP.String())
-	}
+	item.LastTime = time.Now().Format("2006-01-02 15:04:05")
+	ans, _ := item.Answers[name]
 	for _, r := range resp.Answer {
-		rcd, ok := item.Dns[dns.Type(r.Header().Rrtype).String()]
-		ip := parseAnswer(r)
-		result, err := anticorruption.GetIpApi().Query(ip)
-		if err == nil {
-			ip = fmt.Sprintf("%s:%s", ip, result)
-		}
-		if ok {
-			item.Dns[dns.Type(r.Header().Rrtype).String()] = addSet(rcd, ip)
-		} else {
-			item.Dns[dns.Type(r.Header().Rrtype).String()] = []string{ip}
-		}
+		ans = addSet(ans, r)
+		item.Answers[name] = addSet(ans, r)
 	}
 
 	for _, r := range resp.Ns {
-		rcd, ok := item.Dns[dns.Type(r.Header().Rrtype).String()]
-		ip := parseNS(r)
-		result, err := anticorruption.GetIpApi().Query(ip)
-		if err == nil {
-			ip = fmt.Sprintf("%s:%s", ip, result)
-		}
-		if ok {
-			item.Dns[dns.Type(r.Header().Rrtype).String()] = addSet(rcd, ip)
-		} else {
-			item.Dns[dns.Type(r.Header().Rrtype).String()] = []string{ip}
-		}
+		ans = addSet(ans, r)
+		item.Answers[name] = addSet(ans, r)
 	}
 
 	for _, r := range resp.Extra {
-		rcd, ok := item.Dns[dns.Type(r.Header().Rrtype).String()]
-		if ok {
-			item.Dns[dns.Type(r.Header().Rrtype).String()] = addSet(rcd, parseExt(r))
-		} else {
-			item.Dns[dns.Type(r.Header().Rrtype).String()] = []string{parseExt(r)}
-		}
+		ans = addSet(ans, r)
+		item.Answers[name] = addSet(ans, r)
 	}
-	item.LastTime = time.Now().Format("2006-01-02 15:04:05")
-	if err := s.db.Save(context.TODO(), RequestTotal, name, item); err != nil {
+	item.Answers[name] = ans
+	if err := s.db.Save(context.TODO(), RequestTotal, addr, item); err != nil {
 		log.Logger().Error("server.dnsRequestTotal save failed %s", err.Error())
 	}
 }
@@ -1035,14 +1013,29 @@ func (e Error) Error() string {
 	return fmt.Sprintf("%v: %v (%v) [%v]", e.Code, e.Message, e.Cause, e.Index)
 }
 
-func addSet(src []string, target string) []string {
+func addSet(src []*msg.DnsAnswer, r dns.RR) []*msg.DnsAnswer {
+	qt := dns.Type(r.Header().Rrtype).String()
+	ip := parseAnswer(r)
+	result, err := anticorruption.GetIpApi().Query(ip)
+	if err == nil {
+		ip = fmt.Sprintf("%s:%s", ip, result)
+	}
+	for _, s := range src {
+		if qt == s.Qty {
+			s.Result = set(s.Result, ip)
+			return src
+		}
+	}
+	src = append(src, &msg.DnsAnswer{Qty: qt, Result: []string{ip}})
+	return src
+}
+
+func set(src []string, target string) []string {
 	for _, v := range src {
 		if target == v {
 			return src
 		}
 	}
-	var result []string
-	result = append(result, src...)
-	result = append(result, target)
-	return result
+	src = append(src, target)
+	return src
 }

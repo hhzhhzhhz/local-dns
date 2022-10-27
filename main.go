@@ -66,14 +66,17 @@ func boolEnv(key string, def bool) bool {
 func SetEnv()  {
 	os.Setenv("SKYDNS_DOMAIN", "cluster.local.")
 	os.Setenv("SKYDNS_NAMESERVERS", "114.114.114.114:53,8.8.8.8:53")
-	os.Setenv("SKYDNS_API", "127.0.0.1:9876")
-	os.Setenv("DB_FILE", "F:\\dns_db")
-	os.Setenv("LOG_DIR", "./var/")
+	os.Setenv("SKYDNS_API", "0.0.0.0:80")
+	os.Setenv("DB_FILE", "D:\\dns\\dns_db_new")
+	os.Setenv("LOG_DIR", "D:\\dns\\log")
 	os.Setenv("IP_DB_FILE", "./var/ip2region.xdb")
+	os.Setenv("SKYDNS_ADDR", "0.0.0.0:53")
+	os.Setenv("STATIC_PATH", "./api/static/html/*")
 	//os.Setenv("SKYDNS_DOMAIN", "cluster.local")
 }
 
 func init() {
+	os.Setenv("env", "dev")
 	if os.Getenv("env") == "dev" {
 		SetEnv()
 	}
@@ -83,6 +86,7 @@ func init() {
 	flag.StringVar(&config.DbFile, "dbfile", env("DB_FILE", "/var/dnsCore"), "ip:port to bind to (API_ADDR)")
 	flag.StringVar(&config.LogDir, "logdir", env("LOG_DIR", "/var/log"), "ip:port to bind to (API_ADDR)")
 	flag.StringVar(&config.IpDbFile, "IpDbFile", env("IP_DB_FILE", "/var/ip2region.xdb"), "ip:port to bind to (API_ADDR)")
+	flag.StringVar(&config.StaticPath, "StaticPath", env("STATIC_PATH", "/var/templates/*"), "static path")
 
 
 	flag.StringVar(&nameserver, "nameservers", env("SKYDNS_NAMESERVERS", ""), "nameserver address(es) to forward (non-local) queries to e.g. 8.8.8.8:53,8.8.4.4:53")
@@ -193,7 +197,7 @@ func (p *program) Run() error {
 		log.Logger().Info("skydns: metrics enabled on :%s%s", metrics.Port, metrics.Path)
 	}
 
-	api := api.NewApiServer(config.ApiAddr, backend, db)
+	api := api.NewApiServer(config, backend, db)
 	go func() {
 		if err := api.Run(); err != nil {
 			log.Logger().Warn("api: %s", err)

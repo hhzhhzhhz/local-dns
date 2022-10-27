@@ -21,7 +21,6 @@ func fatalf() func(format string, v ...interface{}) {
 	return log.Logger().Info
 }
 
-
 func request_log(w dns.ResponseWriter, req *dns.Msg, resp *dns.Msg) {
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf("received DNS Request from %q question=[", w.RemoteAddr()))
@@ -30,20 +29,19 @@ func request_log(w dns.ResponseWriter, req *dns.Msg, resp *dns.Msg) {
 	}
 	buf.WriteString("] answer=[")
 	for _, r := range resp.Answer {
-		buf.WriteString(r.String()+ ";")
+		buf.WriteString(r.String() + ";")
 	}
 	buf.WriteString("] ns=[")
 	for _, r := range resp.Ns {
-		buf.WriteString(r.String()+ ";")
+		buf.WriteString(r.String() + ";")
 	}
 	buf.WriteString("] extra=[")
 	for _, r := range resp.Extra {
-		buf.WriteString(r.String()+ ";")
+		buf.WriteString(r.String() + ";")
 	}
 	buf.WriteString("]")
 	log.Logger().Info(buf.String())
 }
-
 
 //func uniq(w dns.ResponseWriter, req *dns.Msg, resp *dns.Msg) {
 //	var name, qtype string
@@ -125,4 +123,3 @@ func parseNS(r dns.RR) string {
 func parseExt(r dns.RR) string {
 	return parseAnswer(r)
 }
-
